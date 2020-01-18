@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "hashver"
+version = "0.1.0"
+description = "Automate versioning and related requirements"
+authors = ["Ronnie Smith <halfpint1170@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+gitpython = "^3.0.5"
+click = "^7.0"
+toml = "^0.10.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+black = "19.3b0"
+pytest-cov = "^2.8.1"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+hashver = "hashver:cli"
