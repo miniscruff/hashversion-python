@@ -103,10 +103,7 @@ def change():
         )
 
     description_answer = input("Description of change?: ")
-    data = {
-        "type": type_answer,
-        "description": description_answer,
-    }
+    data = {"type": type_answer, "description": description_answer}
     # similar to cookie cutter
     # the keys are keys and values are input labels
     for question, label in config.extra_questions.items():
