@@ -7,7 +7,7 @@ Python CLI for automating hash versioning and related requirements.
 To help automate versioning, changelog management and other pieces of continuous
 deployments.
 
-## Installation :inbox_tray:
+## Installation
 ```bash
 > git clone https://github.com/miniscruff/hashversion-python.git
 > cd  hashver-python
@@ -16,10 +16,10 @@ deployments.
 > black .
 ```
 
-## Bugs :bug:
+## Bugs
 
 This project is getting upgrades in my free time if there is a problem please create a bug report in the issues section.
 
-## License :scroll:
+## License
 
 - Licensed under [MIT License](https://github.com/miniscruff/hashversion-python/blob/master/LICENSE)
