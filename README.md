@@ -4,8 +4,6 @@
 ![Issues](https://img.shields.io/github/issues/miniscruff/hashver-python.svg)
 
 Python CLI for automating hash versioning and related requirements.
-
-## Motivation :question:
 To help automate versioning, changelog management and other pieces of continuous
 deployments.
 
