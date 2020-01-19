@@ -96,20 +96,21 @@ def change():
     config = Config()
     today = date.today()
 
+    type_answer = input("Type of change?: ")
+    if type_answer not in config.change_types:
+        raise Exception(
+            f'Invalid change type of "{type_answer}" should be one of {config.change_types}'
+        )
+
+    description_answer = input("Description of change?: ")
+    data = {
+        "type": type_answer,
+        "description": description_answer,
+    }
     # similar to cookie cutter
     # the keys are keys and values are input labels
-    data = {
-        "type": "Type of change?",
-        "description": "Description of change",
-        **config.extra_questions,
-    }
-    for question in data:
-        data[question] = input(data[question] + ": ")
-
-    if data["type"] not in config.change_types:
-        raise Exception(
-            f'Invalid change type of "{data["type"]}" should be one of {config.change_types}'
-        )
+    for question, label in config.extra_questions.items():
+        data[question] = input(label + ": ")
 
     data["year"] = today.year
     data["month"] = today.month

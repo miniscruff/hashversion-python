@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hashversion"
-version = "0.2.0"
+version = "0.2.1"
 description = "Automate versioning and related requirements when using hashver"
 authors = ["Ronnie Smith <halfpint1170@gmail.com>"]
 readme = "README.md"
