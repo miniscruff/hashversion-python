@@ -14,7 +14,10 @@ class Config:
         except Exception as e:
             toml_config = {}
 
+        #: How many characters of the git hash to include.
+        #: Defaults to 8, recommended 6-10 but anything is allowed
         self.hash_length = toml_config.get("hash_length", 8)
+        #: Whether or not to include a 2 digit day in your version
         self.use_day = toml_config.get("use_day", False)
 
 
