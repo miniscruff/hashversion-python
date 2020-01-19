@@ -1,7 +1,7 @@
-# HashVer
+# Hash Version
 
-![License](https://img.shields.io/github/license/miniscruff/hashver-python.svg)
-![Issues](https://img.shields.io/github/issues/miniscruff/hashver-python.svg)
+![License](https://img.shields.io/github/license/miniscruff/hashversion-python.svg)
+![Issues](https://img.shields.io/github/issues/miniscruff/hashversion-python.svg)
 
 Python CLI for automating hash versioning and related requirements.
 To help automate versioning, changelog management and other pieces of continuous
@@ -9,7 +9,7 @@ deployments.
 
 ## Installation :inbox_tray:
 ```bash
-> git clone https://github.com/miniscruff/hashver-python.git
+> git clone https://github.com/miniscruff/hashversion-python.git
 > cd  hashver-python
 > poetry install
 > pytest
@@ -22,4 +22,4 @@ This project is getting upgrades in my free time if there is a problem please cr
 
 ## License :scroll:
 
-- Licensed under [MIT License](https://github.com/miniscruff/hashver-python/blob/master/LICENSE)
+- Licensed under [MIT License](https://github.com/miniscruff/hashversion-python/blob/master/LICENSE)

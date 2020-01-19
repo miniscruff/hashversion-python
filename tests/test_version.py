@@ -1,4 +1,4 @@
-from hashver import Config, cli
+from hashversion import Config, cli
 from unittest.mock import patch, MagicMock, DEFAULT
 import pytest
 
