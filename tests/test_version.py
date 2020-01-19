@@ -1,4 +1,5 @@
 from hashversion.cli import Config, cli
+from tests.utils import fake_config
 from unittest.mock import patch, MagicMock, DEFAULT
 
 # just a bunch of numbers in a row for easy test cases
@@ -10,10 +11,7 @@ class TestVersion:
         with patch.multiple(
             "hashversion.cli", click=DEFAULT, Repo=DEFAULT, date=DEFAULT, Config=DEFAULT
         ) as mocks:
-            fake_config = Config()
-            for k, v in configs.items():
-                setattr(fake_config, k, v)
-            mocks["Config"].return_value = fake_config
+            mocks["Config"].return_value = fake_config(configs)
             mocks["Repo"].return_value = MagicMock(
                 heads=MagicMock(master=MagicMock(commit=default_commit_hash))
             )
