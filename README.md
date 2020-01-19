@@ -1,4 +1,4 @@
-# [Repo name] made with :heart:
+# HashVer
 
 ![License](https://img.shields.io/github/license/miniscruff/hashver-python.svg)
 ![Issues](https://img.shields.io/github/issues/miniscruff/hashver-python.svg)
