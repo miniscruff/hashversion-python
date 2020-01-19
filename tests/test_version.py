@@ -17,7 +17,7 @@ class TestVersion:
             )
             mocks["date"].today.return_value = MagicMock(year=2020, month=2, day=14)
             cli_runner.invoke(cli, "version", catch_exceptions=False)
-            return mocks["click"].echo.call_args.args[0]
+            return mocks["click"].echo.call_args[0][0]
 
     def test_default(self, cli_runner):
         assert self.invoke_version(cli_runner) == "2020-02-01234567"
