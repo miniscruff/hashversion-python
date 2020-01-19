@@ -1,4 +1,4 @@
-name: Python package
+name: Quality Checks
 
 on: [push]
 
@@ -31,3 +31,8 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
