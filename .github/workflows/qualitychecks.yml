@@ -33,6 +33,7 @@ jobs:
         pytest --cov-report=xml:coverage.xml
     - name: Codecov
       uses: codecov/codecov-action@v1.0.5
+      if: matrix.python-version == 3.8
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true
