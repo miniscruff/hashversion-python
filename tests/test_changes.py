@@ -269,14 +269,16 @@ class TestExportChangelog:
         with open("changes/demo_add.json", "w") as change_file:
             json.dump(base_change, change_file)
 
-        self.invoke_export(cli_runner, year_header="# {year}\n", month_header="## {month_name}\n", day_header="### {day_name}\n")
+        self.invoke_export(
+            cli_runner,
+            year_header="# {year}\n",
+            month_header="## {month_name}\n",
+            day_header="### {day_name}\n",
+        )
 
         with open("CHANGELOG.md") as changelog_file:
             assert changelog_file.read() == (
-                "# 2020\n"
-                "## January\n"
-                "### Monday\n"
-                "* (2020-01-20) added: desc\n"
+                "# 2020\n## January\n### Monday\n* (2020-01-20) added: desc\n"
             )
 
     def test_export_custom_format(self, cli_runner):
