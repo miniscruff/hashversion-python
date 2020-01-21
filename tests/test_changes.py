@@ -123,8 +123,8 @@ class TestExportChangelog:
 
         with open("CHANGELOG.md") as changelog_file:
             assert changelog_file.read() == (
-                "(2020-02-14) added: add a thing\n"
-                "(2020-02-13) fixed: fixed a thing\n"
+                "* (2020-02-14) added: add a thing\n"
+                "* (2020-02-13) fixed: fixed a thing\n"
             )
 
     def test_export_to_empty_file_sorted_by_type(self, cli_runner):
@@ -145,8 +145,8 @@ class TestExportChangelog:
 
         with open("CHANGELOG.md") as changelog_file:
             assert changelog_file.read() == (
-                "(2020-02-14) added: add a thing\n"
-                "(2020-02-15) fixed: fixed a thing\n"
+                "* (2020-02-14) added: add a thing\n"
+                "* (2020-02-15) fixed: fixed a thing\n"
             )
 
     def test_export_to_empty_file_with_complicated_date_sort(self, cli_runner):
@@ -171,10 +171,10 @@ class TestExportChangelog:
 
         with open("CHANGELOG.md") as changelog_file:
             assert changelog_file.read() == (
-                "(2020-02-11) added: desc\n"
-                "(2020-02-10) added: desc\n"
-                "(2020-02-10) deprecated: desc\n"
-                "(2020-02-10) fixed: desc\n"
+                "* (2020-02-11) added: desc\n"
+                "* (2020-02-10) added: desc\n"
+                "* (2020-02-10) deprecated: desc\n"
+                "* (2020-02-10) fixed: desc\n"
             )
 
     def test_export_to_empty_file_with_complicated_type_sort(self, cli_runner):
@@ -203,12 +203,80 @@ class TestExportChangelog:
 
         with open("CHANGELOG.md") as changelog_file:
             assert changelog_file.read() == (
-                "(2020-02-10) added: desc\n"
-                "(2020-02-11) deprecated: desc\n"
-                "(2020-02-10) deprecated: desc\n"
-                "(2020-02-12) fixed: desc\n"
-                "(2020-02-11) fixed: desc\n"
-                "(2020-02-10) fixed: desc\n"
+                "* (2020-02-10) added: desc\n"
+                "* (2020-02-11) deprecated: desc\n"
+                "* (2020-02-10) deprecated: desc\n"
+                "* (2020-02-12) fixed: desc\n"
+                "* (2020-02-11) fixed: desc\n"
+                "* (2020-02-10) fixed: desc\n"
+            )
+
+    def test_with_headers(self, cli_runner):
+        os.mkdir("changes")
+        base_change = {
+            "year": 2020,
+            "month": 4,
+            "day": 10,
+            "type": "added",
+            "description": "desc",
+        }
+        with open("changes/demo_year.json", "w") as change_file:
+            json.dump(base_change, change_file)
+        with open("changes/demo_month.json", "w") as change_file:
+            json.dump({**base_change, **{"month": 3}}, change_file)
+        with open("changes/demo_day.json", "w") as change_file:
+            json.dump({**base_change, **{"month": 2, "day": 12}}, change_file)
+        with open("changes/demo_day_2.json", "w") as change_file:
+            json.dump({**base_change, **{"month": 2, "day": 13}}, change_file)
+        with open("changes/demo_month_2.json", "w") as change_file:
+            json.dump({**base_change, **{"month": 1, "day": 12}}, change_file)
+
+        self.invoke_export(
+            cli_runner,
+            year_header="# {year}\n",
+            month_header="## {month}\n",
+            day_header="### {day}\n",
+        )
+
+        with open("CHANGELOG.md") as changelog_file:
+            assert changelog_file.read() == (
+                "# 2020\n"
+                "## 4\n"
+                "### 10\n"
+                "* (2020-04-10) added: desc\n"
+                "## 3\n"
+                "### 10\n"
+                "* (2020-03-10) added: desc\n"
+                "## 2\n"
+                "### 13\n"
+                "* (2020-02-13) added: desc\n"
+                "### 12\n"
+                "* (2020-02-12) added: desc\n"
+                "## 1\n"
+                "### 12\n"
+                "* (2020-01-12) added: desc\n"
+            )
+
+    def test_with_month_name_day_of_week_name_header(self, cli_runner):
+        os.mkdir("changes")
+        base_change = {
+            "year": 2020,
+            "month": 1,
+            "day": 20,
+            "type": "added",
+            "description": "desc",
+        }
+        with open("changes/demo_add.json", "w") as change_file:
+            json.dump(base_change, change_file)
+
+        self.invoke_export(cli_runner, year_header="# {year}\n", month_header="## {month_name}\n", day_header="### {day_name}\n")
+
+        with open("CHANGELOG.md") as changelog_file:
+            assert changelog_file.read() == (
+                "# 2020\n"
+                "## January\n"
+                "### Monday\n"
+                "* (2020-01-20) added: desc\n"
             )
 
     def test_export_custom_format(self, cli_runner):
@@ -262,13 +330,13 @@ class TestExportChangelog:
                 "",
                 "[Start Changelog]: #",
                 "",
-                "(2020-02-14) added: add a thing",
+                "* (2020-02-14) added: add a thing",
                 "",
                 "End with me",
                 "",
             ]
 
-    def test_export_custom_header(self, cli_runner):
+    def test_export_custom_start(self, cli_runner):
         with open("CHANGELOG.md", "w") as changelog_file:
             changelog_file.write("# Just a header\n")
             changelog_file.write("And some text\n")
@@ -287,7 +355,7 @@ class TestExportChangelog:
                 "",
                 "[DO NOT EDIT BELOW]: #",
                 "",
-                "(2020-02-14) added: add a thing",
+                "* (2020-02-14) added: add a thing",
                 "",
                 "End with me",
                 "",

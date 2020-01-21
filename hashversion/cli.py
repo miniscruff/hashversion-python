@@ -1,6 +1,7 @@
 import click
 from git import Repo
 from datetime import date
+from calendar import month_name, day_name, weekday
 import toml
 import json
 from secrets import token_hex
@@ -43,9 +44,9 @@ class Config:
         #: File to export change logs to when using export
         #: Defaults to CHANGELOG.md
         self.export_file = data.get("export_file", "CHANGELOG.md")
-        #: String format of exported changelogs"
+        #: String format of exported changelogs
         self.export_format = data.get(
-            "export_format", "({year}-{month:02}-{day:02}) {type}: {description}\n"
+            "export_format", "* ({year}-{month:02}-{day:02}) {type}: {description}\n"
         )
         #: How the exports are sorted, either time or type
         self.export_sort = ExportSort.__members__[data.get("export_sort", "time")]
@@ -54,10 +55,18 @@ class Config:
         #: Default: [Start Changelog]: # which acts as a markdown comment
         self.export_start = data.get("export_start", "[Start Changelog]: #")
 
-        if not self.export_format.endswith("\n"):
-            self.export_format += "\n"
-        if not self.export_start.endswith("\n"):
-            self.export_start += "\n"
+        #: Optional header to incluce for year changes
+        self.year_header = data.get("year_header", None)
+        #: Optional header to incluce for month changes
+        self.month_header = data.get("month_header", None)
+        #: Optional header to incluce for day changes
+        self.day_header = data.get("day_header", None)
+
+        new_line_attrs = ["export_format", "export_start"]
+        for attr_name in new_line_attrs:
+            value = getattr(self, attr_name)
+            if not value.endswith("\n"):
+                setattr(self, attr_name, value + "\n")
 
 
 @click.group()
@@ -122,6 +131,24 @@ def change():
 @cli.command()
 def export():
     config = Config()
+
+    raw_changes = []
+    for file in os.listdir(config.change_directory):
+        if not file.endswith(".json"):
+            continue
+        change_path = os.path.join(config.change_directory, file)
+        with open(change_path) as change_file:
+            changes = json.load(change_file)
+            changes["month_name"] = month_name[changes["month"]]
+            changes["day_name"] = day_name[
+                weekday(changes["year"], changes["month"], changes["day"])
+            ]
+            raw_changes.append(changes)
+
+    # early return if we have no changes
+    if not raw_changes:
+        return
+
     if config.export_sort == ExportSort.time:
         sort_order = lambda data: (
             data["year"],
@@ -139,33 +166,44 @@ def export():
         )
         reverse = False
 
-    changes = []
-    for file in os.listdir(config.change_directory):
-        if not file.endswith(".json"):
-            continue
-        change_path = os.path.join(config.change_directory, file)
-        with open(change_path) as change_file:
-            changes.append(json.load(change_file))
+    change_lines = []
+    last_groups = {"year": None, "month": None, "day": None}
+    for change_data in sorted(raw_changes, key=sort_order, reverse=reverse):
+        if last_groups["year"] is None or change_data["year"] != last_groups["year"]:
+            last_groups["year"] = change_data["year"]
+            last_groups["month"] = None
+            last_groups["day"] = None
+            if config.year_header:
+                change_lines.append(config.year_header.format(**change_data))
+        if last_groups["month"] is None or change_data["month"] != last_groups["month"]:
+            last_groups["month"] = change_data["month"]
+            last_groups["day"] = None
+            if config.month_header:
+                change_lines.append(config.month_header.format(**change_data))
+        if last_groups["day"] is None or change_data["day"] != last_groups["day"]:
+            last_groups["day"] = change_data["day"]
+            if config.day_header:
+                change_lines.append(config.day_header.format(**change_data))
 
-    if changes:
-        try:
-            file_lines = [
-                line + "\n"
-                for line in open(config.export_file).read().strip().split("\n")
-            ]
-        except FileNotFoundError:
-            file_lines = []
+        change_lines.append(config.export_format.format(**change_data))
 
-        try:
-            start_line = file_lines.index(config.export_start) + 2
-        except ValueError:
-            start_line = len(file_lines)
+    try:
+        file_lines = [
+            line + "\n" for line in open(config.export_file).read().strip().split("\n")
+        ]
+    except FileNotFoundError:
+        file_lines = []
 
-        # add a buffer line below our new changes
-        if start_line > 0:
-            file_lines.insert(start_line, "\n")
-        for change_data in reversed(sorted(changes, key=sort_order, reverse=reverse)):
-            file_lines.insert(start_line, config.export_format.format(**change_data))
+    try:
+        start_line = file_lines.index(config.export_start) + 2
+    except ValueError:
+        start_line = len(file_lines)
 
-        with open(config.export_file, "w") as changelog_file:
-            changelog_file.writelines(file_lines)
+    # add a buffer line below our new changes
+    if start_line > 0:
+        change_lines.append("\n")
+
+    file_lines = file_lines[:start_line] + change_lines + file_lines[start_line:]
+
+    with open(config.export_file, "w") as changelog_file:
+        changelog_file.writelines(file_lines)
