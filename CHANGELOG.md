@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 0.3.0 - 2020-01-20
+## Added
+* Options to include year, month or day headers
+* Month name and day name to change object for str formats
 ## Changed
 * Default export format to include a starting asterisk
 
