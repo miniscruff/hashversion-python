@@ -13,7 +13,7 @@ class TestVersion:
         ) as mocks:
             mocks["Config"].return_value = fake_config(configs)
             mocks["Repo"].return_value = MagicMock(
-                heads=MagicMock(master=MagicMock(commit=default_commit_hash))
+                head=MagicMock(commit=default_commit_hash)
             )
             mocks["date"].today.return_value = MagicMock(year=2020, month=2, day=14)
             cli_runner.invoke(cli, "version", catch_exceptions=False)
