@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Version command did not work properly when multiple branches existed
 
 ## 0.3.0 - 2020-01-20
-## Added
+### Added
 * Options to include year, month or day headers
 * Month name and day name to change object for str formats
-## Changed
+### Changed
 * Default export format to include a starting asterisk
 
 ## 0.2.1 - 2020-01-19
-## Fixed
+### Fixed
 * Typing an invalid change type errors immediately
 
 ## 0.2.0 - 2020-01-18

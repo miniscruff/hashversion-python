@@ -10,8 +10,7 @@ Python CLI for automating hash versioning and related requirements.
 To help automate versioning, changelog management and other pieces of continuous
 deployments.
 
-## Documentation
-Coming soon to a read the docs near you.
+1. Documentation url coming soon
 
-## Bugs
-This project is getting upgrades in my free time if there is a problem please create a bug report in the issues section.
+## Quick Start
+... coming soon ...
