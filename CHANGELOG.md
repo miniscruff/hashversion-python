@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Use f-string eval to format change lines
 * Default export format does not have a new line
+* Use date object type instead of year, month and day integers
 
 ## 0.3.1 - 2020-01-21
 ### Fixed
