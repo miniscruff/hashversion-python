@@ -281,6 +281,26 @@ class TestExportChangelog:
                 "# 2020\n## January\n### Monday\n* (2020-01-20) added: desc\n"
             )
 
+    def test_export_with_f_string_feature(self, cli_runner):
+        os.mkdir("changes")
+        with open("changes/demo_change.json", "w") as change_file:
+            json.dump(
+                {
+                    "year": 2020,
+                    "month": 2,
+                    "day": 14,
+                    "type": "added",
+                    "description": "add a thing",
+                },
+                change_file,
+            )
+
+        custom_format = "{type.title()}: {description}"
+        self.invoke_export(cli_runner, export_format=custom_format)
+
+        with open("CHANGELOG.md") as changelog_file:
+            assert changelog_file.read() == ("Added: add a thing\n")
+
     def test_export_custom_format(self, cli_runner):
         os.mkdir("changes")
         with open("changes/demo_change.json", "w") as change_file:

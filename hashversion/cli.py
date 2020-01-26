@@ -46,7 +46,7 @@ class Config:
         self.export_file = data.get("export_file", "CHANGELOG.md")
         #: String format of exported changelogs
         self.export_format = data.get(
-            "export_format", "* ({year}-{month:02}-{day:02}) {type}: {description}\n"
+            "export_format", "* ({year}-{month:02}-{day:02}) {type}: {description}"
         )
         #: How the exports are sorted, either time or type
         self.export_sort = ExportSort.__members__[data.get("export_sort", "time")]
@@ -62,11 +62,8 @@ class Config:
         #: Optional header to incluce for day changes
         self.day_header = data.get("day_header", None)
 
-        new_line_attrs = ["export_format", "export_start"]
-        for attr_name in new_line_attrs:
-            value = getattr(self, attr_name)
-            if not value.endswith("\n"):
-                setattr(self, attr_name, value + "\n")
+        if not self.export_start.endswith("\n"):
+            self.export_start += "\n"
 
 
 @click.group()
@@ -128,6 +125,12 @@ def change():
         json.dump(data, change_file, indent=2)
 
 
+def format_change(export_format, **kwargs):
+    for k, v in kwargs.items():
+        locals()[k] = v
+    return eval(f"f'{export_format}'") + "\n"
+
+
 @cli.command()
 def export():
     config = Config()
@@ -185,7 +188,8 @@ def export():
             if config.day_header:
                 change_lines.append(config.day_header.format(**change_data))
 
-        change_lines.append(config.export_format.format(**change_data))
+        new_change = format_change(config.export_format, **change_data)
+        change_lines.append(new_change)
 
     try:
         file_lines = [
