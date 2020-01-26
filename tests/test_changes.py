@@ -1,6 +1,7 @@
 from hashversion.cli import Config, cli
 from tests.utils import fake_config
 from unittest.mock import patch, MagicMock, DEFAULT
+from datetime import date
 import os
 import json
 import pytest
@@ -12,7 +13,7 @@ class TestCreateChanges:
             "hashversion.cli", click=DEFAULT, Config=DEFAULT, date=DEFAULT
         ) as mocks:
             mocks["Config"].return_value = fake_config(configs)
-            mocks["date"].today.return_value = MagicMock(year=2020, month=2, day=14)
+            mocks["date"].today.return_value = date(year=2020, month=2, day=14)
             cli_runner.invoke(
                 cli, "change", input="\n".join(input), catch_exceptions=False
             )
@@ -24,9 +25,7 @@ class TestCreateChanges:
         assert len(files) == 1
         with open("changes/" + files[0]) as change_file:
             assert json.load(change_file) == {
-                "year": 2020,
-                "month": 2,
-                "day": 14,
+                "date": "2020-02-14",
                 "type": "added",
                 "description": "add a thing",
             }
@@ -62,9 +61,7 @@ class TestCreateChanges:
         assert len(files) == 1
         with open("changes/" + files[0]) as change_file:
             assert json.load(change_file) == {
-                "year": 2020,
-                "month": 2,
-                "day": 14,
+                "date": "2020-02-14",
                 "type": "added",
                 "description": "add a thing",
                 "issue_key": "145",
@@ -82,13 +79,7 @@ class TestExportChangelog:
         os.mkdir("changes")
         with open("changes/demo_change.json", "w") as change_file:
             json.dump(
-                {
-                    "year": 2020,
-                    "month": 2,
-                    "day": 14,
-                    "type": "added",
-                    "description": "add a thing",
-                },
+                {"date": "2020-02-14", "type": "added", "description": "add a thing"},
                 change_file,
             )
 
@@ -109,13 +100,7 @@ class TestExportChangelog:
         self.create_dummy_change()
         with open("changes/demo_change2.json", "w") as change_file:
             json.dump(
-                {
-                    "year": 2020,
-                    "month": 2,
-                    "day": 13,
-                    "type": "fixed",
-                    "description": "fixed a thing",
-                },
+                {"date": "2020-02-13", "type": "fixed", "description": "fixed a thing"},
                 change_file,
             )
 
@@ -131,13 +116,7 @@ class TestExportChangelog:
         self.create_dummy_change()
         with open("changes/demo_change2.json", "w") as change_file:
             json.dump(
-                {
-                    "year": 2020,
-                    "month": 2,
-                    "day": 15,
-                    "type": "fixed",
-                    "description": "fixed a thing",
-                },
+                {"date": "2020-02-15", "type": "fixed", "description": "fixed a thing"},
                 change_file,
             )
 
@@ -151,13 +130,7 @@ class TestExportChangelog:
 
     def test_export_to_empty_file_with_complicated_date_sort(self, cli_runner):
         os.mkdir("changes")
-        base_change = {
-            "year": 2020,
-            "month": 2,
-            "day": 10,
-            "type": "",
-            "description": "desc",
-        }
+        base_change = {"date": "2020-02-10", "type": "", "description": "desc"}
         with open("changes/demo_add.json", "w") as change_file:
             json.dump({**base_change, **{"type": "added"}}, change_file)
         with open("changes/demo_fixed.json", "w") as change_file:
@@ -165,7 +138,9 @@ class TestExportChangelog:
         with open("changes/demo_dep.json", "w") as change_file:
             json.dump({**base_change, **{"type": "deprecated"}}, change_file)
         with open("changes/demo_11.json", "w") as change_file:
-            json.dump({**base_change, **{"type": "added", "day": 11}}, change_file)
+            json.dump(
+                {**base_change, **{"type": "added", "date": "2020-02-11"}}, change_file
+            )
 
         self.invoke_export(cli_runner)
 
@@ -179,25 +154,26 @@ class TestExportChangelog:
 
     def test_export_to_empty_file_with_complicated_type_sort(self, cli_runner):
         os.mkdir("changes")
-        base_change = {
-            "year": 2020,
-            "month": 2,
-            "day": 10,
-            "type": "",
-            "description": "desc",
-        }
+        base_change = {"date": "2020-02-10", "type": "", "description": "desc"}
         with open("changes/demo_add.json", "w") as change_file:
             json.dump({**base_change, **{"type": "added"}}, change_file)
         with open("changes/demo_fixed.json", "w") as change_file:
             json.dump({**base_change, **{"type": "fixed"}}, change_file)
         with open("changes/demo_fix_11.json", "w") as change_file:
-            json.dump({**base_change, **{"type": "fixed", "day": 11}}, change_file)
+            json.dump(
+                {**base_change, **{"type": "fixed", "date": "2020-02-11"}}, change_file
+            )
         with open("changes/demo_fix_12.json", "w") as change_file:
-            json.dump({**base_change, **{"type": "fixed", "day": 12}}, change_file)
+            json.dump(
+                {**base_change, **{"type": "fixed", "date": "2020-02-12"}}, change_file
+            )
         with open("changes/demo_dep.json", "w") as change_file:
             json.dump({**base_change, **{"type": "deprecated"}}, change_file)
         with open("changes/demo_dep_11.json", "w") as change_file:
-            json.dump({**base_change, **{"type": "deprecated", "day": 11}}, change_file)
+            json.dump(
+                {**base_change, **{"type": "deprecated", "date": "2020-02-11"}},
+                change_file,
+            )
 
         self.invoke_export(cli_runner, export_sort="type")
 
@@ -213,29 +189,23 @@ class TestExportChangelog:
 
     def test_with_headers(self, cli_runner):
         os.mkdir("changes")
-        base_change = {
-            "year": 2020,
-            "month": 4,
-            "day": 10,
-            "type": "added",
-            "description": "desc",
-        }
+        base_change = {"date": "2020-04-10", "type": "added", "description": "desc"}
         with open("changes/demo_year.json", "w") as change_file:
             json.dump(base_change, change_file)
         with open("changes/demo_month.json", "w") as change_file:
-            json.dump({**base_change, **{"month": 3}}, change_file)
+            json.dump({**base_change, **{"date": "2020-03-10"}}, change_file)
         with open("changes/demo_day.json", "w") as change_file:
-            json.dump({**base_change, **{"month": 2, "day": 12}}, change_file)
+            json.dump({**base_change, **{"date": "2020-02-12"}}, change_file)
         with open("changes/demo_day_2.json", "w") as change_file:
-            json.dump({**base_change, **{"month": 2, "day": 13}}, change_file)
+            json.dump({**base_change, **{"date": "2020-02-13"}}, change_file)
         with open("changes/demo_month_2.json", "w") as change_file:
-            json.dump({**base_change, **{"month": 1, "day": 12}}, change_file)
+            json.dump({**base_change, **{"date": "2020-01-12"}}, change_file)
 
         self.invoke_export(
             cli_runner,
-            year_header="# {year}\n",
-            month_header="## {month}\n",
-            day_header="### {day}\n",
+            year_header="# {date.year}",
+            month_header="## {date.month}",
+            day_header="### {date.day}",
         )
 
         with open("CHANGELOG.md") as changelog_file:
@@ -259,21 +229,15 @@ class TestExportChangelog:
 
     def test_with_month_name_day_of_week_name_header(self, cli_runner):
         os.mkdir("changes")
-        base_change = {
-            "year": 2020,
-            "month": 1,
-            "day": 20,
-            "type": "added",
-            "description": "desc",
-        }
+        base_change = {"date": "2020-01-20", "type": "added", "description": "desc"}
         with open("changes/demo_add.json", "w") as change_file:
             json.dump(base_change, change_file)
 
         self.invoke_export(
             cli_runner,
-            year_header="# {year}\n",
-            month_header="## {month_name}\n",
-            day_header="### {day_name}\n",
+            year_header="# {date.year}",
+            month_header="## {month_name}",
+            day_header="### {day_name}",
         )
 
         with open("CHANGELOG.md") as changelog_file:
@@ -285,13 +249,7 @@ class TestExportChangelog:
         os.mkdir("changes")
         with open("changes/demo_change.json", "w") as change_file:
             json.dump(
-                {
-                    "year": 2020,
-                    "month": 2,
-                    "day": 14,
-                    "type": "added",
-                    "description": "add a thing",
-                },
+                {"date": "2020-02-14", "type": "added", "description": "add a thing"},
                 change_file,
             )
 
@@ -306,9 +264,7 @@ class TestExportChangelog:
         with open("changes/demo_change.json", "w") as change_file:
             json.dump(
                 {
-                    "year": 2020,
-                    "month": 2,
-                    "day": 14,
+                    "date": "2020-02-14",
                     "type": "added",
                     "description": "add a thing",
                     "issue_key": "1234",

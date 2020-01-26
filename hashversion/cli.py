@@ -46,7 +46,7 @@ class Config:
         self.export_file = data.get("export_file", "CHANGELOG.md")
         #: String format of exported changelogs
         self.export_format = data.get(
-            "export_format", "* ({year}-{month:02}-{day:02}) {type}: {description}"
+            "export_format", "* ({date}) {type}: {description}"
         )
         #: How the exports are sorted, either time or type
         self.export_sort = ExportSort.__members__[data.get("export_sort", "time")]
@@ -115,9 +115,7 @@ def change():
     for question, label in config.extra_questions.items():
         data[question] = input(label + ": ")
 
-    data["year"] = today.year
-    data["month"] = today.month
-    data["day"] = today.day
+    data["date"] = str(today)
 
     random_hex = token_hex()[:8]
     change_path = f"{config.change_directory}/{today.isoformat()}-{random_hex}.json"
@@ -142,10 +140,9 @@ def export():
         change_path = os.path.join(config.change_directory, file)
         with open(change_path) as change_file:
             changes = json.load(change_file)
-            changes["month_name"] = month_name[changes["month"]]
-            changes["day_name"] = day_name[
-                weekday(changes["year"], changes["month"], changes["day"])
-            ]
+            changes["date"] = date(*[int(x) for x in changes["date"].split("-")])
+            changes["month_name"] = month_name[changes["date"].month]
+            changes["day_name"] = day_name[changes["date"].weekday()]
             raw_changes.append(changes)
 
     # early return if we have no changes
@@ -154,39 +151,34 @@ def export():
 
     if config.export_sort == ExportSort.time:
         sort_order = lambda data: (
-            data["year"],
-            data["month"],
-            data["day"],
+            data["date"],
             -config.change_types.index(data["type"]),
         )
-        reverse = True
     else:
         sort_order = lambda data: (
-            config.change_types.index(data["type"]),
-            -data["year"],
-            -data["month"],
-            -data["day"],
+            -config.change_types.index(data["type"]),
+            data["date"],
         )
-        reverse = False
 
     change_lines = []
     last_groups = {"year": None, "month": None, "day": None}
-    for change_data in sorted(raw_changes, key=sort_order, reverse=reverse):
-        if last_groups["year"] is None or change_data["year"] != last_groups["year"]:
-            last_groups["year"] = change_data["year"]
+    for change_data in sorted(raw_changes, key=sort_order, reverse=True):
+        change_date = change_data["date"]
+        if last_groups["year"] is None or change_date.year != last_groups["year"]:
+            last_groups["year"] = change_date.year
             last_groups["month"] = None
             last_groups["day"] = None
             if config.year_header:
-                change_lines.append(config.year_header.format(**change_data))
-        if last_groups["month"] is None or change_data["month"] != last_groups["month"]:
-            last_groups["month"] = change_data["month"]
+                change_lines.append(format_change(config.year_header, **change_data))
+        if last_groups["month"] is None or change_date.month != last_groups["month"]:
+            last_groups["month"] = change_date.month
             last_groups["day"] = None
             if config.month_header:
-                change_lines.append(config.month_header.format(**change_data))
-        if last_groups["day"] is None or change_data["day"] != last_groups["day"]:
-            last_groups["day"] = change_data["day"]
+                change_lines.append(format_change(config.month_header, **change_data))
+        if last_groups["day"] is None or change_date.day != last_groups["day"]:
+            last_groups["day"] = change_date.day
             if config.day_header:
-                change_lines.append(config.day_header.format(**change_data))
+                change_lines.append(format_change(config.day_header, **change_data))
 
         new_change = format_change(config.export_format, **change_data)
         change_lines.append(new_change)
